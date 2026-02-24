@@ -1761,23 +1761,159 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.m
   // ═══════════════════════════════════════════════════════════════
   // TEAMMATES AI
   // ═══════════════════════════════════════════════════════════════
+  // ── LINE OF SIGHT ────────────────────────────────────────────────────────────
+  // Samples N points along shooter→target. Returns false if any point is inside
+  // a solid building wall (not a doorway). Fast and cheap.
+  function hasLineOfSight(from, to){
+    const steps = 20;
+    const dx = to.x - from.x, dz = to.z - from.z;
+    for(let i = 1; i < steps; i++){
+      const t = i / steps;
+      const cx = from.x + dx * t, cz = from.z + dz * t;
+      for(const b of buildings){
+        if(Math.abs(cx - b.x) < b.hw - 0.1 &&
+           Math.abs(cz - b.z) < b.hd - 0.1 &&
+           from.y < b.roofY &&
+           !canEnterBuilding(cx, cz, b)) return false;
+      }
+    }
+    return true;
+  }
+
+  // ── TEAMMATE NAVIGATION ───────────────────────────────────────────────────────
+  // Each teammate picks the nearest enemy, then actively navigates around any
+  // building that's in the way. Navigation uses a simple "bug algorithm":
+  //   1. Try to walk straight toward the enemy.
+  //   2. If blocked by a wall, slide along it (pick the side that gets you closer).
+  //   3. Once LOS is clear and within range, stop and open fire.
+  // This makes teammates physically run around corners to engage enemies.
+
+  function teammateNavigate(tm, target){
+    const SPEED       = 0.11;   // move speed
+    const ENGAGE_DIST = 7;      // stop moving and shoot at this range
+    const dir = new THREE.Vector3()
+      .subVectors(target.position, tm.position).setY(0);
+    const dist = dir.length();
+    if(dist < 0.5) return;
+    dir.normalize();
+
+    // Try straight-line move first
+    const nx = tm.position.x + dir.x * SPEED;
+    const nz = tm.position.z + dir.z * SPEED;
+    const straight = checkBuildingCollision(nx, nz, tm.position.y);
+
+    if(!straight.blocked){
+      // Path is clear — walk straight toward enemy
+      if(dist > ENGAGE_DIST){
+        tm.position.x = nx;
+        tm.position.z = nz;
+      }
+      tm.rotation.y = Math.atan2(dir.x, dir.z);
+      return;
+    }
+
+    // ── Blocked by wall — try wall-following ──────────────────────────
+    // Test both perpendicular directions and pick whichever gets us closer
+    // to the target after one step. Also bias toward the one that isn't
+    // heading further from the target.
+    const perp1 = new THREE.Vector3(-dir.z, 0,  dir.x); // left
+    const perp2 = new THREE.Vector3( dir.z, 0, -dir.x); // right
+
+    // Add a forward component so we keep moving around, not just sideways
+    const slide1 = perp1.clone().addScaledVector(dir, 0.4).normalize();
+    const slide2 = perp2.clone().addScaledVector(dir, 0.4).normalize();
+
+    const n1x = tm.position.x + slide1.x * SPEED;
+    const n1z = tm.position.z + slide1.z * SPEED;
+    const n2x = tm.position.x + slide2.x * SPEED;
+    const n2z = tm.position.z + slide2.z * SPEED;
+
+    const c1 = checkBuildingCollision(n1x, n1z, tm.position.y);
+    const c2 = checkBuildingCollision(n2x, n2z, tm.position.y);
+
+    // Score each option by resulting distance to target (lower = better)
+    const score1 = c1.blocked ? Infinity
+      : Math.hypot(n1x - target.position.x, n1z - target.position.z);
+    const score2 = c2.blocked ? Infinity
+      : Math.hypot(n2x - target.position.x, n2z - target.position.z);
+
+    // Use wall-following memory: each teammate remembers which side it's
+    // following so it doesn't oscillate.
+    if(!tm.userData.wallSide) tm.userData.wallSide = 0;
+    // Commit to a side for 0.8s before reconsidering
+    const now = Date.now();
+    if(!tm.userData.wallSideTime || now - tm.userData.wallSideTime > 800){
+      tm.userData.wallSide = (score1 <= score2) ? 1 : 2;
+      tm.userData.wallSideTime = now;
+    }
+
+    let moved = false;
+    if(tm.userData.wallSide === 1 && !c1.blocked){
+      tm.position.x = n1x; tm.position.z = n1z; moved = true;
+      tm.rotation.y = Math.atan2(slide1.x, slide1.z);
+    } else if(!c2.blocked){
+      tm.position.x = n2x; tm.position.z = n2z; moved = true;
+      tm.rotation.y = Math.atan2(slide2.x, slide2.z);
+    }
+
+    // If both perpendiculars are blocked (corner), back up slightly
+    if(!moved){
+      tm.position.x -= dir.x * SPEED * 0.5;
+      tm.position.z -= dir.z * SPEED * 0.5;
+      tm.userData.wallSideTime = 0; // reset side choice
+    }
+  }
+
   function updateTeammates(){
-    const squadHPBonus=skills.squad*20;
-    teammates.forEach(tm=>{
-      if(tm.userData.health<=0) return;
-      let nearest=null,minDist=Infinity;
-      enemies.forEach(e=>{const d=tm.position.distanceTo(e.position);if(d<minDist){minDist=d;nearest=e;}});
-      if(nearest){
-        const dir=new THREE.Vector3().subVectors(nearest.position,tm.position).setY(0);
-        if(dir.length()>8){ dir.normalize(); const nx=tm.position.x+dir.x*0.09,nz=tm.position.z+dir.z*0.09; const c=checkBuildingCollision(nx,nz,tm.position.y); if(!c.blocked){tm.position.x=nx;tm.position.z=nz;} }
-        else if(dir.length()<5){ dir.normalize(); const nx=tm.position.x-dir.x*0.05,nz=tm.position.z-dir.z*0.05; const c=checkBuildingCollision(nx,nz,tm.position.y); if(!c.blocked){tm.position.x=nx;tm.position.z=nz;} }
-        tm.rotation.y=Math.atan2(dir.x,dir.z);
-        const now=Date.now();
-        if(now-tm.userData.shootTimer>500&&minDist<15){
-          tm.userData.shootTimer=now;
-          dir.normalize();
-          const ds=[dir.clone(),dir.clone().applyAxisAngle(new THREE.Vector3(0,1,0),Math.PI/4),dir.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-Math.PI/4)];
-          ds.forEach(d=>{ const b=createBullet(new THREE.Vector3(tm.position.x,tm.position.y+0.4,tm.position.z),d,0x00ffff,0.5,0.12); b.userData.damage=1*(1+squadHPBonus/100); b.userData.fromTeammate=true; bullets.push(b); });
+    const squadHPBonus = skills.squad * 20;
+
+    teammates.forEach(tm => {
+      if(tm.userData.health <= 0) return;
+
+      // ── Pick target: prefer nearest with LOS, fall back to nearest overall ──
+      let losTarget = null, losDist = Infinity;
+      let anyTarget = null, anyDist = Infinity;
+
+      enemies.forEach(e => {
+        const d = tm.position.distanceTo(e.position);
+        if(d < anyDist){ anyDist = d; anyTarget = e; }
+        if(hasLineOfSight(tm.position, e.position)){
+          if(d < losDist){ losDist = d; losTarget = e; }
+        }
+      });
+
+      // Always navigate toward the nearest enemy, regardless of LOS
+      // This makes teammates physically run around buildings to get close
+      const navTarget = anyTarget;
+      const shootTarget = losTarget;
+
+      if(!navTarget) return;
+
+      // ── Navigate toward nearest enemy (goes around buildings) ────────
+      teammateNavigate(tm, navTarget);
+
+      // ── Shoot only if LOS is clear and in range ───────────────────────
+      if(shootTarget && losDist < 14){
+        const shootDir = new THREE.Vector3()
+          .subVectors(shootTarget.position, tm.position)
+          .setY(0).normalize();
+
+        // Face the shoot target while shooting
+        tm.rotation.y = Math.atan2(shootDir.x, shootDir.z);
+
+        const now = Date.now();
+        if(now - tm.userData.shootTimer > 480){
+          tm.userData.shootTimer = now;
+          const dmg = 1.2 * (1 + squadHPBonus / 100);
+          // One accurate shot straight at the enemy
+          const b = createBullet(
+            new THREE.Vector3(tm.position.x, tm.position.y + 0.4, tm.position.z),
+            shootDir.clone(),
+            0x00ffff, 0.6, 0.12
+          );
+          b.userData.damage = dmg;
+          b.userData.fromTeammate = true;
+          bullets.push(b);
         }
       }
     });
