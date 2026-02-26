@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEON SQUAD: Night City Siege — PRESTIGE EDITION</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="icon" href="neon-squad-favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -439,31 +438,139 @@
     @keyframes floatUp { 0%{opacity:1;transform:translateY(0);} 100%{opacity:0;transform:translateY(-60px);} }
 
     /* ===== MOBILE CONTROLS ===== */
-    #joystickContainer {
-      position: fixed; bottom: 30px; left: 30px;
-      width: 100px; height: 100px;
-      background: rgba(0,229,255,0.08);
-      border-radius: 50%; border: 2px solid rgba(0,229,255,0.25);
-      touch-action: none; z-index: 500; display: none;
+    /* Always hidden on desktop, always shown on touch devices */
+    #mobileControls {
+      display: none;
+      pointer-events: none;
     }
-    #joystick {
-      position: absolute; width: 48px; height: 48px;
-      background: radial-gradient(circle, var(--neon-green), #009944);
-      border-radius: 50%; top: 26px; left: 26px;
-      transition: left 0.08s, top 0.08s; pointer-events: none;
-      box-shadow: 0 0 15px var(--neon-green);
+    @media (pointer: coarse), (max-width: 768px) {
+      #mobileControls { display: block; }
+      /* Shrink HUD panels on small screens so they don't block gameplay */
+      #ui { width: 160px !important; font-size: 0.82em; }
+      #statsPanel { width: 130px !important; font-size: 0.82em; }
+      #missilePanel { top: 310px !important; }
+      #classPanel { top: 200px !important; }
+      #upgradePanel { width: 200px !important; font-size: 0.82em; }
+      #skillTreeToggle { font-size: 0.6em !important; padding: 7px 10px !important; }
+      #minimap { width: 110px !important; height: 110px !important; }
     }
-    #btnJump, #btnShoot {
-      position: fixed; bottom: 30px;
-      width: 90px; height: 90px;
-      font-size: 1em; font-weight: 700; color: #111;
-      border-radius: 50%; cursor: pointer;
-      z-index: 500; touch-action: none;
-      font-family: var(--font-hud); border: none;
+
+    /* ── Joystick ── */
+    #joystickZone {
+      position: fixed;
+      bottom: 26px; left: 20px;
+      width: 130px; height: 130px;
+      z-index: 700;
+      touch-action: none; pointer-events: all;
+      /* Slightly larger tap target */
     }
-    #btnJump { right: 140px; display: none; background: radial-gradient(circle, #00e5ff, #0099aa); box-shadow: 0 0 20px rgba(0,229,255,0.5); }
-    #btnShoot { right: 20px; display: none; background: radial-gradient(circle, var(--neon-green), #009944); box-shadow: 0 0 20px rgba(0,255,136,0.5); }
-    @media (pointer: coarse) { #joystickContainer, #btnJump, #btnShoot { display: block; } }
+    #joystickBase {
+      position: absolute; inset: 0;
+      background: rgba(0,229,255,0.07);
+      border: 2px solid rgba(0,229,255,0.3);
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(0,229,255,0.1), inset 0 0 30px rgba(0,0,0,0.4);
+    }
+    /* Cross-hair tick marks */
+    #joystickBase::before, #joystickBase::after {
+      content: '';
+      position: absolute;
+      background: rgba(0,229,255,0.2);
+      border-radius: 2px;
+    }
+    #joystickBase::before { width: 2px; height: 100%; left: 50%; top: 0; transform: translateX(-50%); }
+    #joystickBase::after  { height: 2px; width: 100%; top: 50%; left: 0; transform: translateY(-50%); }
+    #joystickKnob {
+      position: absolute;
+      width: 54px; height: 54px;
+      background: radial-gradient(circle at 35% 35%, #44ffaa, #00cc66);
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      box-shadow: 0 0 18px rgba(0,255,136,0.7), 0 4px 10px rgba(0,0,0,0.5);
+      transition: box-shadow 0.15s;
+      /* JS overrides left/top — we keep transform always */
+      will-change: left, top;
+    }
+    #joystickKnob.active {
+      box-shadow: 0 0 30px rgba(0,255,136,1), 0 4px 10px rgba(0,0,0,0.5);
+    }
+    /* Direction label under joystick */
+    #joystickLabel {
+      position: fixed;
+      bottom: 8px; left: 20px;
+      width: 130px; text-align: center;
+      font-family: var(--font-mono); font-size: 0.58em;
+      color: rgba(0,229,255,0.45); letter-spacing: 2px;
+      pointer-events: none; z-index: 700;
+    }
+
+    /* ── Action buttons ── */
+    #mobileActionBtns {
+      position: fixed;
+      bottom: 175px; right: 16px;
+      display: flex; flex-direction: column;
+      align-items: flex-end; gap: 12px;
+      z-index: 700; pointer-events: all;
+    }
+    .mob-btn {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      border: none; cursor: pointer;
+      font-family: var(--font-title);
+      font-weight: 900; font-size: 0.72em;
+      letter-spacing: 0.05em;
+      color: #000;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      transition: transform 0.08s, box-shadow 0.08s;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 2px;
+      position: relative; overflow: hidden;
+    }
+    .mob-btn:active { transform: scale(0.88); }
+    .mob-btn .btn-icon { font-size: 1.6em; line-height: 1; }
+    .mob-btn .btn-label { font-size: 0.65em; letter-spacing: 0.1em; opacity: 0.8; }
+
+    /* Ripple effect */
+    .mob-btn::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,0.25);
+      border-radius: 50%;
+      transform: scale(0); opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .mob-btn:active::after { transform: scale(1.5); opacity: 0; transition: none; }
+
+    #mobBtnShoot {
+      width: 82px; height: 82px;  /* biggest — most used */
+      background: radial-gradient(circle at 35% 35%, #44ff99, #00cc55);
+      box-shadow: 0 0 25px rgba(0,255,136,0.6), 0 6px 16px rgba(0,0,0,0.5);
+    }
+    #mobBtnShoot:active { box-shadow: 0 0 40px rgba(0,255,136,0.9); }
+
+    #mobBtnJump {
+      background: radial-gradient(circle at 35% 35%, #55eeff, #0099bb);
+      box-shadow: 0 0 22px rgba(0,229,255,0.5), 0 6px 14px rgba(0,0,0,0.5);
+    }
+    #mobBtnJump:active { box-shadow: 0 0 38px rgba(0,229,255,0.9); }
+
+    #mobBtnMissile {
+      background: radial-gradient(circle at 35% 35%, #ff8844, #cc3300);
+      box-shadow: 0 0 22px rgba(255,68,0,0.5), 0 6px 14px rgba(0,0,0,0.5);
+    }
+    #mobBtnMissile:active { box-shadow: 0 0 38px rgba(255,68,0,0.9); }
+
+    #mobBtnReload {
+      background: radial-gradient(circle at 35% 35%, #aaddff, #4488bb);
+      box-shadow: 0 0 18px rgba(0,150,255,0.4), 0 6px 12px rgba(0,0,0,0.5);
+    }
+
+    /* Old joystick/buttons — hide completely, replaced above */
+    #joystickContainer, #btnJump, #btnShoot { display: none !important; }
 
     /* Instructions Modal */
     .instructions-modal {
@@ -877,9 +984,43 @@
   </div>
 
   <!-- MOBILE CONTROLS -->
-  <div id="joystickContainer"><div id="joystick"></div></div>
-  <button id="btnJump">JUMP</button>
-  <button id="btnShoot">FIRE</button>
+  <div id="mobileControls">
+    <!-- LEFT: Joystick -->
+    <div id="joystickZone">
+      <div id="joystickBase"></div>
+      <div id="joystickKnob"></div>
+    </div>
+    <div id="joystickLabel">MOVE</div>
+
+    <!-- RIGHT: Action buttons -->
+    <div id="mobileActionBtns">
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button class="mob-btn" id="mobBtnReload">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-label">RELOAD</span>
+        </button>
+        <button class="mob-btn" id="mobBtnMissile">
+          <span class="btn-icon">🚀</span>
+          <span class="btn-label">MISSILE</span>
+        </button>
+      </div>
+      <div style="display:flex;gap:14px;align-items:center;">
+        <button class="mob-btn" id="mobBtnJump">
+          <span class="btn-icon">⬆️</span>
+          <span class="btn-label">JUMP</span>
+        </button>
+        <button class="mob-btn" id="mobBtnShoot">
+          <span class="btn-icon">🔥</span>
+          <span class="btn-label">FIRE</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- legacy stubs so old JS refs don't crash -->
+  <div id="joystickContainer" style="display:none!important"><div id="joystick"></div></div>
+  <button id="btnJump" style="display:none!important">JUMP</button>
+  <button id="btnShoot" style="display:none!important">FIRE</button>
 
   <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.module.js';
@@ -2353,16 +2494,102 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.m
   document.getElementById('instructionsModal').addEventListener('click',e=>{if(e.target===document.getElementById('instructionsModal'))document.getElementById('instructionsModal').classList.remove('show');});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('instructionsModal').classList.remove('show');});
 
-  // Mobile controls
-  const joystickContainer=document.getElementById('joystickContainer');
-  const joystickKnob=document.getElementById('joystick');
-  let joystickActive=false;
-  joystickContainer.addEventListener('pointerdown',e=>{joystickActive=true;moveJoystick(e);});
-  window.addEventListener('pointermove',e=>{if(joystickActive)moveJoystick(e);});
-  window.addEventListener('pointerup',()=>{joystickActive=false;moveVector.set(0,0);joystickKnob.style.left='26px';joystickKnob.style.top='26px';});
-  function moveJoystick(e){const r=joystickContainer.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=r.width/2,ang=Math.atan2(dy,dx);const dist=Math.min(max,Math.sqrt(dx*dx+dy*dy));joystickKnob.style.left=(26+Math.cos(ang)*dist)+'px';joystickKnob.style.top=(26+Math.sin(ang)*dist)+'px';moveVector.x=dx/max;moveVector.y=-dy/max;}
-  document.getElementById('btnJump').addEventListener('click',jump);
-  document.getElementById('btnShoot').addEventListener('click',shoot);
+  // ═══════════════════════════════════════════════════════════════
+  // MOBILE CONTROLS — multi-touch joystick + action buttons
+  // ═══════════════════════════════════════════════════════════════
+  (function setupMobileControls(){
+    const zone    = document.getElementById('joystickZone');
+    const base    = document.getElementById('joystickBase');
+    const knob    = document.getElementById('joystickKnob');
+    const label   = document.getElementById('joystickLabel');
+    if(!zone) return;
+
+    // Track which pointer ID owns the joystick so other fingers don't hijack it
+    let joyPointerId = null;
+    let joyOriginX = 0, joyOriginY = 0;
+    const RADIUS = 52; // max knob travel from centre
+
+    function joyMove(clientX, clientY){
+      const dx = clientX - joyOriginX;
+      const dy = clientY - joyOriginY;
+      const dist = Math.min(RADIUS, Math.hypot(dx, dy));
+      const angle = Math.atan2(dy, dx);
+      const kx = Math.cos(angle) * dist;
+      const ky = Math.sin(angle) * dist;
+      // Position knob relative to zone centre
+      knob.style.left = (65 + kx) + 'px';
+      knob.style.top  = (65 + ky) + 'px';
+      // Feed into moveVector (x=strafe, y=forward)
+      moveVector.x =  dx / RADIUS;
+      moveVector.y = -dy / RADIUS;
+      knob.classList.add('active');
+      // Direction hint
+      const deg = angle * 180 / Math.PI;
+      if(dist < 8) label.textContent = 'MOVE';
+      else if(deg > -45  && deg <= 45)  label.textContent = '▶ RIGHT';
+      else if(deg > 45   && deg <= 135) label.textContent = '▼ BACK';
+      else if(deg > 135  || deg <=-135) label.textContent = '◀ LEFT';
+      else                               label.textContent = '▲ FWD';
+    }
+
+    function joyRelease(){
+      joyPointerId = null;
+      moveVector.set(0, 0);
+      knob.style.left = '50%';
+      knob.style.top  = '50%';
+      knob.style.transform = 'translate(-50%,-50%)';
+      knob.classList.remove('active');
+      label.textContent = 'MOVE';
+    }
+
+    zone.addEventListener('pointerdown', e => {
+      if(joyPointerId !== null) return; // already tracking a finger
+      joyPointerId = e.pointerId;
+      zone.setPointerCapture(e.pointerId);
+      const r = zone.getBoundingClientRect();
+      joyOriginX = r.left + r.width  / 2;
+      joyOriginY = r.top  + r.height / 2;
+      joyMove(e.clientX, e.clientY);
+      e.preventDefault();
+    }, {passive: false});
+
+    zone.addEventListener('pointermove', e => {
+      if(e.pointerId !== joyPointerId) return;
+      joyMove(e.clientX, e.clientY);
+      e.preventDefault();
+    }, {passive: false});
+
+    zone.addEventListener('pointerup',     e => { if(e.pointerId === joyPointerId) joyRelease(); });
+    zone.addEventListener('pointercancel', e => { if(e.pointerId === joyPointerId) joyRelease(); });
+
+    // ── Action buttons — use pointerdown for instant feel ────────────
+    function mobPress(el, fn){
+      if(!el) return;
+      el.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        fn();
+        // Visual pulse
+        el.style.transform = 'scale(0.85)';
+        setTimeout(() => el.style.transform = '', 120);
+      }, {passive: false});
+    }
+
+    mobPress(document.getElementById('mobBtnShoot'),   () => shoot());
+    mobPress(document.getElementById('mobBtnJump'),    () => jump());
+    mobPress(document.getElementById('mobBtnReload'),  () => reloadGun());
+    mobPress(document.getElementById('mobBtnMissile'), () => launchMissile());
+
+    // Auto-fire: hold FIRE button
+    let autoFireInterval = null;
+    const fireBtn = document.getElementById('mobBtnShoot');
+    if(fireBtn){
+      fireBtn.addEventListener('pointerdown', () => {
+        autoFireInterval = setInterval(() => shoot(), 180);
+      }, {passive: true});
+      fireBtn.addEventListener('pointerup',     () => clearInterval(autoFireInterval));
+      fireBtn.addEventListener('pointercancel', () => clearInterval(autoFireInterval));
+    }
+  })();
 
   // ═══════════════════════════════════════════════════════════════
   // RENDER LOOP
