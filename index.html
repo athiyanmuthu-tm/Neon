@@ -118,11 +118,10 @@
 
     /* LEFT HUD - Player Info */
     #ui {
-      position: fixed; top: 12px; left: 12px; width: 200px;
-      display: none; max-height: calc(100vh - 80px);
-      z-index: 500;
+      position: fixed; top: 12px; left: 12px; width: 190px;
+      display: none; z-index: 500;
     }
-    #ui .hud-panel { padding: 0; overflow: hidden; max-height: calc(100vh - 100px); overflow-y: auto; }
+    #ui .hud-panel { padding: 0; overflow: hidden; }
 
     /* HUD Header */
     .hud-header {
@@ -204,7 +203,7 @@
 
     /* ===== RIGHT HUD - Stats ===== */
     #statsPanel {
-      position: fixed; top: 12px; right: 12px; width: 160px; z-index: 500;
+      position: fixed; top: 12px; right: 12px; width: 155px; z-index: 500;
       display: none;
     }
     #statsPanel .hud-panel { padding: 0; overflow: hidden; }
@@ -229,6 +228,7 @@
     /* ===== SKILL TREE TOGGLE BUTTON ===== */
     #skillTreeToggle {
       position: fixed; bottom: 12px; left: 12px; z-index: 600; display: none;
+      /* On mobile this sits above the joystick — joystick is at bottom:26 w:130 */
       font-family: var(--font-title); font-size: 0.7em; font-weight: 700;
       letter-spacing: 0.1em; padding: 9px 14px;
       background: rgba(4,8,20,0.97); border: 1px solid rgba(0,229,255,0.45);
@@ -286,10 +286,10 @@
 
     /* ===== PRESTIGE CLASS PANEL ===== */
     #classPanel {
-      position: fixed; top: 260px; right: 12px;
+      position: fixed; top: 230px; right: 12px;
       display: none; z-index: 500;
     }
-    #classPanel .hud-panel { padding: 0; overflow: hidden; width: 190px; }
+    #classPanel .hud-panel { padding: 0; overflow: hidden; width: 155px; }
     .class-badge {
       padding: 10px 12px;
       background: linear-gradient(90deg, rgba(180,0,255,0.2) 0%, transparent 100%);
@@ -305,11 +305,10 @@
 
     /* ===== KILL FEED ===== */
     #killFeed {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
+      position: fixed; top: 12px; left: 50%;
+      transform: translateX(-50%);
       width: 220px; z-index: 400; pointer-events: none;
       display: flex; flex-direction: column; gap: 4px;
-      margin-top: -100px;
     }
     .kill-entry {
       background: rgba(0,0,0,0.85);
@@ -445,14 +444,15 @@
     }
     @media (pointer: coarse), (max-width: 768px) {
       #mobileControls { display: block; }
-      /* Shrink HUD panels on small screens so they don't block gameplay */
-      #ui { width: 160px !important; font-size: 0.82em; }
-      #statsPanel { width: 130px !important; font-size: 0.82em; }
-      #missilePanel { top: 310px !important; }
-      #classPanel { top: 200px !important; }
-      #upgradePanel { width: 200px !important; font-size: 0.82em; }
-      #skillTreeToggle { font-size: 0.6em !important; padding: 7px 10px !important; }
-      #minimap { width: 110px !important; height: 110px !important; }
+      /* Shrink panels and reposition so gameplay is clear */
+      #ui           { width: 140px !important; font-size: 0.78em !important; top: 6px !important; left: 6px !important; }
+      #statsPanel   { width: 130px !important; font-size: 0.78em !important; top: 6px !important; right: 6px !important; }
+      #missilePanel { width: 140px !important; font-size: 0.78em !important; top: 290px !important; left: 6px !important; }
+      #classPanel   { width: 130px !important; font-size: 0.78em !important; top: 200px !important; right: 6px !important; }
+      #upgradePanel { width: 140px !important; font-size: 0.78em !important; bottom: 48px !important; left: 6px !important; }
+      #skillTreeToggle { font-size: 0.58em !important; padding: 6px 10px !important; bottom: 6px !important; left: 165px !important; }
+      #minimap { width: 100px !important; height: 100px !important; bottom: 6px !important; right: 6px !important; }
+      #killFeed { width: 160px !important; font-size: 0.78em !important; top: 6px !important; }
     }
 
     /* ── Joystick ── */
@@ -658,10 +658,10 @@
 
     /* ===== MISSILE SYSTEM ===== */
     #missilePanel {
-      position: fixed; top: 375px; left: 12px;
+      position: fixed; top: 340px; left: 12px;
       display: none; z-index: 500;
     }
-    #missilePanel .hud-panel { padding: 0; overflow: hidden; width: 200px; }
+    #missilePanel .hud-panel { padding: 0; overflow: hidden; width: 190px; }
     .missile-charges {
       display: flex; gap: 8px; padding: 8px 12px;
       flex-wrap: nowrap; justify-content: center;
@@ -1238,6 +1238,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.m
   const ENEMY_SHOOT_INTERVAL=8000;
   let cameraShake=0;
   const moveVector=new THREE.Vector2();
+  const joystickVector=new THREE.Vector2(); // written by mobile joystick, never reset by keyboard loop
   let lastMoveAngle=0;
 
   // XP / Leveling system
@@ -1821,12 +1822,19 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.m
   const keys={};
 
   function updatePlayerMovement(){
-    moveVector.set(0,0);
-    if(keys['w']||keys['arrowup']) moveVector.y-=1;
-    if(keys['s']||keys['arrowdown']) moveVector.y+=1;
-    if(keys['a']||keys['arrowleft']) moveVector.x-=1;
-    if(keys['d']||keys['arrowright']) moveVector.x+=1;
-    if(moveVector.length()>0) moveVector.normalize();
+    // Keyboard input into a temp vector
+    const kv=new THREE.Vector2();
+    if(keys['w']||keys['arrowup'])    kv.y-=1;
+    if(keys['s']||keys['arrowdown'])  kv.y+=1;
+    if(keys['a']||keys['arrowleft'])  kv.x-=1;
+    if(keys['d']||keys['arrowright']) kv.x+=1;
+    if(kv.length()>0) kv.normalize();
+    // Combine keyboard + joystick (joystick wins if keyboard idle)
+    if(kv.length()>0.01){
+      moveVector.copy(kv);
+    } else {
+      moveVector.copy(joystickVector);
+    }
 
     const actualSpeed=playerSpeed+speedBoost+(skills.speed*0.012);
     const newX=player.position.x+moveVector.x*actualSpeed;
@@ -2519,9 +2527,9 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.m
       // Position knob relative to zone centre
       knob.style.left = (65 + kx) + 'px';
       knob.style.top  = (65 + ky) + 'px';
-      // Feed into moveVector (x=strafe, y=forward)
-      moveVector.x =  dx / RADIUS;
-      moveVector.y = -dy / RADIUS;
+      // Write to joystickVector (never reset by keyboard loop)
+      joystickVector.x =  dx / RADIUS;
+      joystickVector.y = -dy / RADIUS;
       knob.classList.add('active');
       // Direction hint
       const deg = angle * 180 / Math.PI;
@@ -2534,7 +2542,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.m
 
     function joyRelease(){
       joyPointerId = null;
-      moveVector.set(0, 0);
+      joystickVector.set(0, 0);
       knob.style.left = '50%';
       knob.style.top  = '50%';
       knob.style.transform = 'translate(-50%,-50%)';
