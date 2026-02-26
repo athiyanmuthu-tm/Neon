@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEON SQUAD: Night City Siege — PRESTIGE EDITION</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="icon" href="neon-squad-favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -442,8 +443,10 @@
       display: none;
       pointer-events: none;
     }
+    #mobWeaponBar { display: none; } /* shown only on touch via media query */
     @media (pointer: coarse), (max-width: 768px) {
       #mobileControls { display: block; }
+      #mobWeaponBar { display: flex !important; }
       /* Shrink panels and reposition so gameplay is clear */
       #ui           { width: 140px !important; font-size: 0.78em !important; top: 6px !important; left: 6px !important; }
       #statsPanel   { width: 130px !important; font-size: 0.78em !important; top: 6px !important; right: 6px !important; }
@@ -571,6 +574,55 @@
 
     /* Old joystick/buttons — hide completely, replaced above */
     #joystickContainer, #btnJump, #btnShoot { display: none !important; }
+
+    /* ── Weapon switcher bar (sits between joystick and right buttons) ── */
+    #mobWeaponBar {
+      position: fixed;
+      bottom: 80px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 700; pointer-events: all;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .mob-weapon-arrow {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: rgba(4,8,20,0.9);
+      border: 2px solid rgba(0,229,255,0.45);
+      color: var(--neon-cyan);
+      font-size: 1.4em; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 0 14px rgba(0,229,255,0.2), 0 4px 10px rgba(0,0,0,0.5);
+      transition: all 0.12s;
+      user-select: none;
+    }
+    .mob-weapon-arrow:active {
+      transform: scale(0.84);
+      background: rgba(0,229,255,0.18);
+      box-shadow: 0 0 24px rgba(0,229,255,0.5);
+    }
+    #mobWeaponName {
+      min-width: 130px; text-align: center;
+      background: rgba(4,8,20,0.92);
+      border: 1px solid rgba(0,229,255,0.3);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-family: var(--font-title);
+      font-size: 0.68em; font-weight: 700;
+      color: var(--neon-cyan);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      box-shadow: 0 0 12px rgba(0,229,255,0.15);
+      pointer-events: none;
+    }
+    #mobWeaponIdx {
+      font-family: var(--font-mono);
+      font-size: 0.7em;
+      color: #445;
+      display: block;
+      margin-top: 2px;
+    }
 
     /* Instructions Modal */
     .instructions-modal {
@@ -992,9 +1044,19 @@
     </div>
     <div id="joystickLabel">MOVE</div>
 
+    <!-- CENTRE: Weapon switcher -->
+    <div id="mobWeaponBar">
+      <button class="mob-weapon-arrow" id="mobBtnPrevWeapon">&#8249;</button>
+      <div id="mobWeaponName">
+        PISTOL
+        <span id="mobWeaponIdx">1 / 12</span>
+      </div>
+      <button class="mob-weapon-arrow" id="mobBtnNextWeapon">&#8250;</button>
+    </div>
+
     <!-- RIGHT: Action buttons -->
     <div id="mobileActionBtns">
-      <div style="display:flex;gap:12px;align-items:center;">
+      <div style="display:flex;gap:10px;align-items:center;">
         <button class="mob-btn" id="mobBtnReload">
           <span class="btn-icon">🔄</span>
           <span class="btn-label">RELOAD</span>
@@ -1004,7 +1066,7 @@
           <span class="btn-label">MISSILE</span>
         </button>
       </div>
-      <div style="display:flex;gap:14px;align-items:center;">
+      <div style="display:flex;gap:12px;align-items:center;">
         <button class="mob-btn" id="mobBtnJump">
           <span class="btn-icon">⬆️</span>
           <span class="btn-label">JUMP</span>
@@ -2586,6 +2648,31 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.m
     mobPress(document.getElementById('mobBtnJump'),    () => jump());
     mobPress(document.getElementById('mobBtnReload'),  () => reloadGun());
     mobPress(document.getElementById('mobBtnMissile'), () => launchMissile());
+
+    // Weapon switching
+    const mobWeaponName = document.getElementById('mobWeaponName');
+    const mobWeaponIdx  = document.getElementById('mobWeaponIdx');
+    function updateMobWeaponDisplay(){
+      if(!mobWeaponName || typeof guns === 'undefined') return;
+      const g = guns[currentGunIndex];
+      if(!g) return;
+      // Update text (keep the idx span inside)
+      mobWeaponName.childNodes[0].textContent = g.name + ' ';
+      if(mobWeaponIdx) mobWeaponIdx.textContent = (currentGunIndex+1) + ' / ' + guns.length;
+    }
+    // Patch updateUI to also refresh weapon display
+    const _origUpdateUI = updateUI;
+    updateUI = function(){ _origUpdateUI(); updateMobWeaponDisplay(); };
+
+    mobPress(document.getElementById('mobBtnPrevWeapon'), () => {
+      currentGunIndex = (currentGunIndex - 1 + guns.length) % guns.length;
+      updateUI();
+    });
+    mobPress(document.getElementById('mobBtnNextWeapon'), () => {
+      currentGunIndex = (currentGunIndex + 1) % guns.length;
+      updateUI();
+    });
+    updateMobWeaponDisplay();
 
     // Auto-fire: hold FIRE button
     let autoFireInterval = null;
