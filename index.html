@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEON SQUAD: Night City Siege — PRESTIGE EDITION</title>
+  <meta name="description" content="NEON SQUAD is a fast-paced top-down shooter set in a vibrant cyberpunk city. Battle waves of enemies, upgrade your squad, and unleash powerful skills in this action-packed arcade experience.">
+  <meta name = "author" content = "ATHIYAN" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="icon" href="neon-squad-favicon.png">
   <meta name="google-site-verification" content="ECQjO8lj8bEtQxZozovqN7DEM8KqIW1bl6NGglGUbCM" />
@@ -816,7 +818,7 @@
     </div>
 
     <p style="font-size:0.85em; color:#445; margin-bottom:20px;">
-      WASD / Arrows • SPACE jump • F shoot • Q/E switch gun • TAB spectate
+      WASD / Arrows • SPACE jump • F shoot • R reload • M missile • Q/E switch gun
     </p>
 
     <button id="btnContinue">▶ DEPLOY TO NIGHT CITY</button>
@@ -828,39 +830,183 @@
     <div class="instructions-content">
       <button class="close-instructions" id="closeInstructions">✕ CLOSE</button>
       <h2>📖 FIELD MANUAL</h2>
+
       <div class="inst-section">
         <h3>🎮 CONTROLS</h3>
         <ul>
-          <li><span class="key-badge">WASD</span> / <span class="key-badge">Arrows</span> — Move</li>
-          <li><span class="key-badge">SPACE</span> — Jump (reach rooftops)</li>
+          <li><span class="key-badge">W A S D</span> / <span class="key-badge">Arrow Keys</span> — Move your soldier</li>
+          <li><span class="key-badge">SPACE</span> — Jump (use to reach rooftops)</li>
           <li><span class="key-badge">F</span> — Shoot in 8 directions</li>
-          <li><span class="key-badge">Q / E</span> — Cycle weapons</li>
-          <li><span class="key-badge">1-9</span> — Select weapon</li>
-          <li><span class="key-badge">TAB</span> — Spectate teammate when dead</li>
+          <li><span class="key-badge">R</span> — Reload your weapon</li>
+          <li><span class="key-badge">M</span> — Launch a homing missile</li>
+          <li><span class="key-badge">Q / E</span> — Cycle through weapons</li>
+          <li><span class="key-badge">1 – 9</span> — Directly select a weapon slot</li>
+
         </ul>
       </div>
+
       <div class="inst-section">
-        <h3>🧬 UPGRADE SYSTEM</h3>
-        <p>Earn <strong>XP</strong> per kill. Level up to gain <strong>Skill Points</strong> to spend in 6 skill trees: Damage, Fire Rate, Ammo Capacity, Move Speed, Max HP, and Squad Boost. Each tree has <strong>10 levels</strong>.</p>
-      </div>
-      <div class="inst-section">
-        <h3>🏆 PRESTIGE CLASSES</h3>
+        <h3>🪖 SPOTTING FRIENDS & ENEMIES</h3>
         <ul>
-          <li><strong>RECON</strong> — +20% speed, see enemies further</li>
-          <li><strong>ASSAULT</strong> — +30% damage, faster reload</li>
-          <li><strong>BERSERKER</strong> — +50% HP, damage scales with low health</li>
-          <li><strong>GHOST</strong> — Enemies target you less, +1 free shield/wave</li>
+          <li><strong style="color:#00ff44">🟢 Green dot</strong> above a soldier = YOU or your AI teammate — don't shoot them!</li>
+          <li><strong style="color:#ff2244">🔴 Red dot</strong> above a soldier = ENEMY — take them down!</li>
         </ul>
-        <p>Unlock at level 5 by reaching 1,000 kills or wave 10.</p>
       </div>
+
+      <div class="inst-section">
+        <h3>👾 ENEMY TYPES</h3>
+        <ul>
+          <li><strong style="color:#ff2244">Grunt</strong> — Basic enemy. Average speed and health. Appears from Wave 1.</li>
+          <li><strong style="color:#ff8800">Runner</strong> — Fast but fragile. Rushes you quickly. Appears from Wave 3.</li>
+          <li><strong style="color:#b400ff">Juggernaut</strong> — Slow but very tanky. Takes many hits to kill. Appears from Wave 5.</li>
+          <li><strong style="color:#00ff88">Shooter</strong> — Ranged attacker. Shoots bullets at you from distance. Appears from Wave 7.</li>
+        </ul>
+        <p>Every <strong>5th wave</strong> spawns a special <strong>BOSS Juggernaut</strong> at the centre of the map!</p>
+      </div>
+
+      <div class="inst-section">
+        <h3>🌊 WAVES</h3>
+        <ul>
+          <li>Kill all enemies in a wave to trigger the next one.</li>
+          <li>Each wave adds more enemies and harder types.</li>
+          <li>A new random <strong>power-up</strong> spawns on the ground at the start of each wave — grab it fast!</li>
+        </ul>
+      </div>
+
+      <div class="inst-section">
+        <h3>🏥 POWER-UPS (walk over to collect)</h3>
+        <ul>
+          <li><strong style="color:#ff2244">❤️ Health (red)</strong> — Restores 35 HP instantly.</li>
+          <li><strong style="color:#00e5ff">⚡ Speed (cyan)</strong> — Boosts move speed for 5 seconds.</li>
+          <li><strong style="color:#ff8800">💥 Damage (orange)</strong> — Doubles damage output for 8 seconds.</li>
+          <li><strong style="color:#b400ff">🛡 Shield (purple)</strong> — Activates a one-hit protection shield.</li>
+        </ul>
+      </div>
+
+      <div class="inst-section">
+        <h3>🛡 SHIELDS</h3>
+        <ul>
+          <li>A shield blocks <strong>one hit</strong> completely — then it breaks.</li>
+          <li>Your first <strong>3 shields are FREE</strong> — use the Shield button in the HUD.</li>
+          <li>After that, each shield costs <strong>1 💎 Gem</strong>.</li>
+          <li><strong>GHOST class</strong> gets a free shield automatically at the start of every wave.</li>
+        </ul>
+      </div>
+
+      <div class="inst-section">
+        <h3>💎 GEMS</h3>
+        <ul>
+          <li>Enemies have a <strong>25% chance</strong> to drop a gem when killed.</li>
+          <li>You also earn a gem automatically every <strong>100 score points</strong>.</li>
+          <li>Gems are spent to buy shields once your 3 free ones run out.</li>
+        </ul>
+      </div>
+
+      <div class="inst-section">
+        <h3>🚀 MISSILE SYSTEM</h3>
+        <ul>
+          <li>You carry <strong>3 homing missiles</strong>. Press <span class="key-badge">M</span> to fire one.</li>
+          <li>Missiles auto-lock onto the nearest enemy and <strong>explode on impact</strong> for area damage.</li>
+          <li>Each missile recharges over <strong>20 seconds</strong> — watch the bar in the Missile panel (top-left).</li>
+        </ul>
+      </div>
+
+      <div class="inst-section">
+        <h3>🏢 BUILDINGS & ROOFTOPS</h3>
+        <ul>
+          <li>Enter buildings through their doorways for cover from enemy fire.</li>
+          <li>Press <span class="key-badge">SPACE</span> repeatedly near a building to <strong>jump up to the rooftop</strong> and shoot from above.</li>
+          <li>Buildings turn <strong>transparent</strong> when you are inside so you can still see the action.</li>
+        </ul>
+      </div>
+
+      <div class="inst-section">
+        <h3>🤝 AI SQUAD</h3>
+        <ul>
+          <li>You have <strong>3 AI teammates</strong> (green dots) who automatically hunt and shoot enemies.</li>
+          <li>If <strong>you die, the game is over</strong> — protect yourself at all costs!</li>
+          <li>Your AI teammates keep fighting but they cannot save you once you're down.</li>
+          <li>Upgrade <strong>Squad Boost</strong> in the skill tree to raise teammate max HP so they can draw fire for longer.</li>
+        </ul>
+      </div>
+
+      <div class="inst-section">
+        <h3>🔫 WEAPONS (12 total)</h3>
+        <ul>
+          <li><strong>Pistol</strong> — Reliable starter. 25 ammo, decent damage.</li>
+          <li><strong>SMG</strong> — Fast fire rate, lower damage. Great against Runners.</li>
+          <li><strong>Shotgun</strong> — Spread shot, devastating up close. 15 ammo.</li>
+          <li><strong>Assault Rifle</strong> — Balanced all-rounder. Best general weapon.</li>
+          <li><strong>Sniper</strong> — Slow but deals 3× damage per shot. 10 ammo.</li>
+          <li><strong>LMG</strong> — 60-round drum for sustained suppressing fire.</li>
+          <li><strong>Rocket Launcher</strong> — Explosive rounds with huge area damage!</li>
+          <li><strong>Crossbow</strong> — High damage bolts at medium speed.</li>
+          <li><strong>Laser</strong> — Fast precise beam. 30 ammo.</li>
+          <li><strong>Minigun</strong> — 100 rounds, the fastest fire rate in the game.</li>
+          <li><strong>Plasma</strong> — Slow large projectile, very high damage.</li>
+          <li><strong>Tesla</strong> — Chains electricity to hit multiple nearby enemies at once.</li>
+        </ul>
+        <p>Always reload (<span class="key-badge">R</span>) between fights. Use <span class="key-badge">Q / E</span> or <span class="key-badge">1–9</span> to switch weapons.</p>
+      </div>
+
       <div class="inst-section">
         <h3>⚡ COMBO SYSTEM</h3>
-        <p>Kill enemies fast to build combos. <strong>3x = Hot</strong> (orange), <strong>6x = Fire</strong> (red), <strong>10x = LEGENDARY</strong> (purple). Combos multiply XP earned.</p>
+        <ul>
+          <li>Kill enemies quickly in a row to build a combo multiplier.</li>
+          <li><strong style="color:#00ff88">3× = HOT</strong> — XP multiplied by 1.5×</li>
+          <li><strong style="color:#ff8800">6× = ON FIRE</strong> — XP multiplied by 2×</li>
+          <li><strong style="color:#b400ff">10× = LEGENDARY</strong> — XP multiplied by 3×</li>
+          <li>Combo resets if you wait more than <strong>2.5 seconds</strong> between kills.</li>
+          <li>Every <strong>10 total kills</strong> awards a bonus Skill Point.</li>
+        </ul>
       </div>
+
       <div class="inst-section">
-        <h3>💎 GEMS & SHIELDS</h3>
-        <p>Gems drop from enemies (25% chance) and are earned every 100 score. First 3 shields free, then 1 gem each. Use the Shield button or collect purple power-ups.</p>
+        <h3>📈 XP & LEVELLING</h3>
+        <ul>
+          <li>Every kill earns XP. Combo multipliers boost how much you earn.</li>
+          <li>Fill the XP bar to <strong>level up</strong> and gain <strong>1 Skill Point</strong>.</li>
+          <li>At <strong>Level 5</strong> you unlock the <strong>Prestige Class</strong> selection!</li>
+        </ul>
       </div>
+
+      <div class="inst-section">
+        <h3>🧬 SKILL TREE (6 skills, 10 levels each)</h3>
+        <ul>
+          <li><strong style="color:#ff8888">💥 Damage</strong> — +22% bullet damage per level.</li>
+          <li><strong style="color:#ffcc88">⚡ Fire Rate</strong> — +18% shooting speed per level.</li>
+          <li><strong style="color:#88ffcc">📦 Ammo</strong> — +12 max ammo per level.</li>
+          <li><strong style="color:#88eeff">👟 Speed</strong> — Increases movement speed per level.</li>
+          <li><strong style="color:#ff9999">❤️ Max HP</strong> — +15 maximum health per level.</li>
+          <li><strong style="color:#aaffdd">🤝 Squad Boost</strong> — +20 HP to all AI teammates per level.</li>
+        </ul>
+        <p>Open the skill tree with the <strong>🧬 SKILLS</strong> button at the bottom-left of the screen.</p>
+      </div>
+
+      <div class="inst-section">
+        <h3>🏆 PRESTIGE CLASSES (unlock at Level 5)</h3>
+        <ul>
+          <li><strong style="color:#00e5ff">RECON</strong> — +25% move speed. Enemies are less alert to your presence.</li>
+          <li><strong style="color:#ff6a00">ASSAULT</strong> — +35% damage on all weapons. 40% faster reload speed.</li>
+          <li><strong style="color:#ff2244">BERSERKER</strong> — +60% max HP. Below 30% HP you take half damage and regain HP on kills.</li>
+          <li><strong style="color:#b400ff">GHOST</strong> — Free shield every wave. Enemies target you less. Silent movement.</li>
+        </ul>
+        <p>Your class <strong>cannot be changed</strong> mid-run — choose wisely!</p>
+      </div>
+
+      <div class="inst-section">
+        <h3>💡 SURVIVAL TIPS</h3>
+        <ul>
+          <li>Keep moving — standing still makes you an easy target for Shooters.</li>
+          <li>Use buildings for cover; enter doorways to break enemy line-of-sight.</li>
+          <li>Save missiles for Juggernauts or Boss waves — they deal massive area damage.</li>
+          <li>Grab power-ups the moment a new wave starts before enemies close in.</li>
+          <li>Chain kills fast to hit LEGENDARY combo and maximise XP.</li>
+          <li>Invest in Squad Boost early — your teammates keep you in the game after you die.</li>
+          <li>Always reload between waves, not in the middle of a firefight!</li>
+        </ul>
+      </div>
+
     </div>
   </div>
 
@@ -1415,46 +1561,121 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.m
   // ═══════════════════════════════════════════════════════════════
   // ENTITY CREATION
   // ═══════════════════════════════════════════════════════════════
+  // ── Free Fire style human soldier builder ──────────────────────
+  function buildHuman(group, skinColor, uniformColor, helmetColor, scale){
+    const S = scale;
+    const sk = new THREE.MeshStandardMaterial({color:skinColor, roughness:0.8});
+    const un = new THREE.MeshStandardMaterial({color:uniformColor, roughness:0.7, metalness:0.1});
+    const hm = new THREE.MeshStandardMaterial({color:helmetColor, roughness:0.5, metalness:0.3});
+    const bt = new THREE.MeshStandardMaterial({color:0x111111, roughness:0.9});
+    const gn = new THREE.MeshStandardMaterial({color:0x222222, roughness:0.4, metalness:0.8});
+
+    const add = (geo, mat, px, py, pz, rx, ry, rz) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(px*S, py*S, pz*S);
+      if(rx) m.rotation.x = rx;
+      if(ry) m.rotation.y = ry;
+      if(rz) m.rotation.z = rz;
+      m.castShadow = true;
+      group.add(m);
+      return m;
+    };
+
+    // Legs
+    add(new THREE.BoxGeometry(0.22*S,0.40*S,0.20*S), un, -0.13,0.20,0);
+    add(new THREE.BoxGeometry(0.22*S,0.40*S,0.20*S), un,  0.13,0.20,0);
+    // Boots
+    add(new THREE.BoxGeometry(0.24*S,0.12*S,0.26*S), bt, -0.13,0.06,0.03*S);
+    add(new THREE.BoxGeometry(0.24*S,0.12*S,0.26*S), bt,  0.13,0.06,0.03*S);
+    // Torso / body armor
+    add(new THREE.BoxGeometry(0.46*S,0.44*S,0.24*S), un, 0,0.62,0);
+    // Chest plate
+    add(new THREE.BoxGeometry(0.30*S,0.26*S,0.26*S), hm, 0,0.64,0);
+    // Belt/hips
+    add(new THREE.BoxGeometry(0.40*S,0.14*S,0.22*S), bt, 0,0.41,0);
+    // Arms
+    add(new THREE.BoxGeometry(0.16*S,0.36*S,0.16*S), un, -0.33,0.60,0);
+    add(new THREE.BoxGeometry(0.16*S,0.36*S,0.16*S), un,  0.33,0.60,0);
+    // Hands
+    add(new THREE.BoxGeometry(0.14*S,0.14*S,0.14*S), sk, -0.33,0.40,0);
+    add(new THREE.BoxGeometry(0.14*S,0.14*S,0.14*S), sk,  0.33,0.40,0);
+    // Neck
+    add(new THREE.CylinderGeometry(0.09*S,0.10*S,0.10*S,8), sk, 0,0.89,0);
+    // Head / face
+    add(new THREE.BoxGeometry(0.30*S,0.30*S,0.28*S), sk, 0,1.04,0);
+    // Helmet
+    add(new THREE.BoxGeometry(0.36*S,0.18*S,0.34*S), hm, 0,1.17,0);
+    // Helmet brim
+    add(new THREE.BoxGeometry(0.38*S,0.05*S,0.10*S), hm, 0,1.09,-0.16*S);
+    // Rifle barrel
+    add(new THREE.BoxGeometry(0.07*S,0.07*S,0.60*S), gn, 0.35*S,0.58,-0.26*S);
+    // Rifle body
+    add(new THREE.BoxGeometry(0.10*S,0.16*S,0.28*S), gn, 0.35*S,0.58, 0.07*S);
+  }
+
+  // Floating dot above head
+  function addDot(parent, color, height){
+    const mat = new THREE.MeshBasicMaterial({color});
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), mat);
+    dot.position.set(0, height, 0);
+    // Always faces camera — keep it as a small sphere, visible from all angles
+    parent.add(dot);
+    return dot;
+  }
+
   function createPlayer(){
-    const geo=new THREE.BoxGeometry(1,1,1);
-    const mat=new THREE.MeshStandardMaterial({color:0x00ff44,emissive:0x00ff44,emissiveIntensity:0.3});
-    const cube=new THREE.Mesh(geo,mat);
-    cube.position.y=0.5; cube.castShadow=true;
-    scene.add(cube);
+    const root = new THREE.Group();
+    root.position.y = 0.5;
+    buildHuman(root, 0xc68642, 0x2d5a1b, 0x1a3a10, 1.5);
+    // Direction arrow (yellow)
     const ag=new THREE.Group();
     const sm=new THREE.MeshStandardMaterial({color:0xffff00,emissive:0xffff00,emissiveIntensity:1.0});
     const shaft=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.18,0.55),sm);
     shaft.position.set(0,0,-0.28); ag.add(shaft);
     const head=new THREE.Mesh(new THREE.ConeGeometry(0.22,0.35,6),sm);
     head.rotation.x=Math.PI/2; head.position.set(0,0,-0.65); ag.add(head);
-    ag.position.set(0,0.62,0); cube.add(ag);
-    cube.userData.arrowGroup=ag;
-    return cube;
+    ag.position.set(0,0.62,0); root.add(ag);
+    root.userData.arrowGroup=ag;
+    // Green dot above head
+    addDot(root, 0x00ff44, 2.1);
+    scene.add(root);
+    return root;
   }
 
   function createTeammate(x,z,id){
-    const mat=new THREE.MeshStandardMaterial({color:0x00ffaa,emissive:0x00ffaa,emissiveIntensity:0.3});
-    const cube=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.9,0.9),mat);
-    cube.position.set(x,0.45,z); cube.castShadow=true;
-    cube.userData={id,health:100,maxHealth:100,isTeammate:true,target:null,shootTimer:0};
+    const root = new THREE.Group();
+    root.position.set(x,0.45,z);
+    buildHuman(root, 0xb07840, 0x1a4a2e, 0x0f2a18, 1.35);
+    root.userData={id,health:100,maxHealth:100,isTeammate:true,target:null,shootTimer:0};
+    // Direction arrow (cyan)
     const am=new THREE.MeshStandardMaterial({color:0x00ffff,emissive:0x00ffff,emissiveIntensity:1.0});
     const ag=new THREE.Group();
     const sh=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.15,0.45),am);
     sh.position.set(0,0,-0.23); ag.add(sh);
     const hd=new THREE.Mesh(new THREE.ConeGeometry(0.18,0.3,6),am);
     hd.rotation.x=Math.PI/2; hd.position.set(0,0,-0.55); ag.add(hd);
-    ag.position.set(0,0.55,0); cube.add(ag); cube.userData.arrowGroup=ag;
-    scene.add(cube); return cube;
+    ag.position.set(0,0.55,0); root.add(ag);
+    root.userData.arrowGroup=ag;
+    // Green dot above head
+    addDot(root, 0x00ff44, 2.0);
+    scene.add(root);
+    return root;
   }
 
   function createEnemy(x,z,type){
     const td=ENEMY_TYPES[type];
-    const geo=new THREE.BoxGeometry(td.size,td.size,td.size);
-    const mat=new THREE.MeshStandardMaterial({color:td.color,emissive:td.color,emissiveIntensity:0.4});
-    const cube=new THREE.Mesh(geo,mat);
-    cube.position.set(x,td.size/2,z); cube.castShadow=true;
-    cube.userData={type,health:td.health,maxHealth:td.maxHealth,lastShootTime:0,hideTimer:Math.random()*15000,isHiding:false,hideTarget:null};
-    scene.add(cube); return cube;
+    const S = td.size * 1.5;
+    const root = new THREE.Group();
+    root.position.set(x, S*0.5, z);
+    // Enemy uniform colors based on type
+    const uniformColors = {BASIC:0x8b0000, FAST:0x7a3a00, TANK:0x4a0080, SHOOTER:0x004a2a};
+    const helmetColors  = {BASIC:0x550000, FAST:0x4a2200, TANK:0x2a0050, SHOOTER:0x002a18};
+    buildHuman(root, 0xa07050, uniformColors[type]||0x8b0000, helmetColors[type]||0x550000, S);
+    root.userData={type,health:td.health,maxHealth:td.maxHealth,lastShootTime:0,hideTimer:Math.random()*15000,isHiding:false,hideTarget:null};
+    // Red dot above head
+    addDot(root, 0xff2244, 1.55*S);
+    scene.add(root);
+    return root;
   }
 
   function createBullet(position,direction,color,speed,size,isEnemy=false){
@@ -1972,7 +2193,8 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.m
       // Recon: enemies target less aggressively
       const aggroMod=currentClass==='RECON'?0.7:1;
       const dir=new THREE.Vector3().subVectors(player.position,enemy.position).setY(0);
-      if(dir.length()>0.1){
+      const distToPlayer=dir.length();
+      if(distToPlayer>0.1){
         dir.normalize();
         const spd=td.speed*(1+currentWave*0.01)*aggroMod;
         const nx=enemy.position.x+dir.x*spd, nz=enemy.position.z+dir.z*spd;
@@ -1986,7 +2208,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.m
           else { enemy.position.x+=dir.z*spd*0.5; enemy.position.z-=dir.x*spd*0.5; }
         }
         if(td.shoots){
-          if(now-enemy.userData.lastShootTime>2000&&dir.length()<15){
+          if(now-enemy.userData.lastShootTime>2000&&distToPlayer<20){
             enemy.userData.lastShootTime=now;
             enemyBullets.push(createBullet(enemy.position.clone(),dir,td.color,0.3,0.15,true));
           }
@@ -2488,14 +2710,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.m
 
   function loseGame(){
     if(gameEnded) return;
-    const alive=teammates.filter(t=>t.userData.health>0);
-    if(alive.length>0){
-      isSpectating=true; player.visible=false; spectatingIndex=0;
-      gameStatusDiv.innerHTML=`<div style="font-family:'Rajdhani',sans-serif;font-size:0.5em;color:#ff8800;text-shadow:0 0 15px #ff8800;">💀 KIA — SPECTATING SQUAD<br><span style="font-size:0.7em;color:#445;letter-spacing:0.2em;">TAB to switch view</span></div>`;
-      setTimeout(()=>gameStatusDiv.innerHTML='',3000);
-    } else {
-      showEndScreen('💀 SQUAD ELIMINATED');
-    }
+    showEndScreen('💀 GAME OVER');
   }
 
   // ═══════════════════════════════════════════════════════════════
